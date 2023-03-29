@@ -14,14 +14,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const uploadImage = (req, res, next) => {
-    const uploadSingle = upload.single('image'); // Field name trên form
+    const uploadSingle = upload.array('images') // Field name trên form
     uploadSingle(req, res, function (err) {
       if (err) {
         console.log("a");
         return res.status(400).json({ error: err.message }); // Trả về lỗi chi tiết
       }
-      // Truyền tên file vào req.body
-      req.body.image = req.file.filename;
+      // req.files là mảng các file đã upload
+      req.body.images = req.files.map(file => file.filename);
       next();
     })
   }
