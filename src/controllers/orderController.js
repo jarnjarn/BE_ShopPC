@@ -1,42 +1,24 @@
 const Order = require('../models/orderModel');
 const OrderDetail = require('../models/orderDeltailModel');
-const Products = require('../models/productModel');
-const Users = require('../models/userModel');
+
+// lấy đơn hàng theo id user và trả về chi tiết đơn hàng đó cả sản phẩm và số lượng và chi tiết các sản phẩm đó
 
 const getOrderByIdUser = async (req, res) => {
-    const { userId } = req.params;
     try {
-        let order = await Order.find({ user: userId })
-            .populate('user', 'name email')
-            .populate({
-                path: 'orderDetail',
-                populate: {
-                    path: 'Products',
-                    select: 'name image',
-                },
-            })
-            .lean(); // thêm phương thức lean() để chuyển đổi đối tượng trả về thành đối tượng Javascript thông thường
-
-        if (!order) {
+        const { userId } = req.params;
+        const orders = await Order.find({ user: userId }).populate('orderDetails', 'product quantity price').populate('user', 'name email');
+        if (!orders) {
             return res.status(404).json({ message: 'Order not found!' });
         }
-
-        // Lặp qua từng đối tượng orderDetails để trích xuất thông tin sản phẩm
-        order = order.map((order) => ({
-            ...order,
-            orderDetails: order.orderDetails.map((detail) => ({
-                ...detail,
-                name: detail.product.name,
-                img: detail.product.image,
-            })),
-        }));
-
-        res.json(order);
+        res.json(orders);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to get order!' });
     }
-};
+}
+
+
+
 
 const getAllOrders = async (req, res) => {
 

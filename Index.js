@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const dotenv = require('dotenv')
 const bodyParser = require('body-parser');
 var cors = require('cors')
+const path = require('path')
 
 const userRouter = require('./src/routers/userRouter.js')
 const categoryRouter = require('./src/routers/categoryRouter.js')
@@ -12,6 +13,7 @@ const orderRouter = require('./src/routers/orderRouter.js')
 
 const app = express()
 
+app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors())

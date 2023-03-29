@@ -1,67 +1,89 @@
 
+const multer = require('multer');
+const Dropbox = require('dropbox').Dropbox;
+const { v4: uuidv4 } = require('uuid');
 const Product = require('../models/productModel');
 
 
-const  getALLProducts = async (req, res) => {
+const getALLProducts = async (req, res) => {
     try {
         const products = await Product.find();
-        res.json(products);
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        const productsWithImageUrls = products.map(({ _doc, image }) => ({
+            ..._doc,
+            image: `${baseUrl}/public/img/${image}`,
+        }));
+        res.json(productsWithImageUrls);
     } catch (err) {
-        return res.status(500).json({msg: err.message});
+        console.error(err);
+        res.status(500).json({ msg: 'Server error' });
     }
 }
 
-const  getProductById = async (req, res) => {
+const getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-        res.json(product);
-    } catch (err) {
-        return res.status(500).json({msg: err.message});
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        const productWithImageUrl = {
+            ...product._doc,
+            image: `${baseUrl}/public/img/${product.image}`,
+        };
+        res.json(productWithImageUrl);
+    }
+    catch (err) {
+
+        return res.status(500).json({ msg: err.message });
     }
 }
+
 
 const createProduct = async (req, res) => {
     try {
-        const {name, inventory,price,img ,description,producer,category } = req.body;
+        const { name, inventory, price, image, description, ram, cpu, main, producer, category } = req.body;
+
+        if (!name || !inventory || !price || !description || !producer || !category || !ram || !cpu || !main) {
+            return res.status(400).json({ msg: "Vui lòng điền đầy đủ thông tin sản phẩm." });
+        }
 
         const product = new Product({
-            name, inventory,price,img ,description,producer,category,date : Date.now()
+            name, inventory, price, image, description, ram, cpu, main, producer, category
         });
-
         await product.save();
-        res.status(201).json({
-            "status": 'success',
-            "data": {
-                "product" : product
-            }
-        });
+
+        res.json({ msg: "Tạo sản phẩm thành công", product });
     } catch (err) {
-        return res.status(500).json({msg: err.message});
-
-    }
-}
-
-const  updateProduct = async (req, res) => {
-    try {
-        const {title, price, description, content, images, category} = req.body;
-
-        const product = await Product.findOneAndUpdate({_id: req.params.id}, {
-            title: title.toLowerCase(), price, description, content, images, category
-        });
-
-        res.json({msg: "Updated a product"});
-    } catch (err) {
-        return res.status(500).json({msg: err.message});
+        return res.status(500).json({ msg: err.message });
     }
 }
 
 
-const  deleteProduct = async (req, res) => {
+
+const updateProduct = async (req, res) => {
+    try{
+        const { name, inventory, price, image, description, ram, cpu, main, producer, category } = req.body;
+        if (!name || !inventory || !price || !description || !producer || !category || !ram || !cpu || !main) {
+            return res.status(400).json({ msg: "Vui lòng điền đầy đủ thông tin sản phẩm." });
+        }
+
+        await Product.findOneAndUpdate({ _id: req.params.id }, {
+            name, inventory, price, image, description, ram, cpu, main, producer, category
+        });
+
+        res.json({ msg: "Cập nhật sản phẩm thành công" });
+    }
+
+    catch (err) {
+        return res.status(500).json({ msg: err.message });
+    }
+}
+
+
+const deleteProduct = async (req, res) => {
     try {
         await Product.findByIdAndDelete(req.params.id);
-        res.json({msg: "Deleted a product"});
+        res.json({ msg: "Deleted a product" });
     } catch (err) {
-        return res.status(500).json({msg: err.message});
+        return res.status(500).json({ msg: err.message });
     }
 }
 

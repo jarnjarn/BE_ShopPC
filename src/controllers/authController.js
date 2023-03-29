@@ -19,6 +19,7 @@ const registerUser = async (req, res) => {
             phone: req.body.phone,
             password: hashedPassword,
             role: "user",
+            address : red.body.address,
             createAt: Date.now(),
             updateAt: Date.now()
         });
@@ -42,17 +43,25 @@ const loginUser = async (req, res) => {
         if (!user) {
             return res.status(400).json({ msg: 'phone hoặc mật khẩu không chính xác' });
         }
-
         // Xác thực mật khẩu
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ msg: ' mật khẩu không chính xác' });
         }
-
-        // Tạo token
+        // Tạo token trả về thông tin người dùng và token
         const token = gentoken(user.id);
-
-        res.json({ token });
+        const succsec = "thanhcong";
+        res.json({
+            succsec,
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role
+            }
+        }) ;
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Lỗi máy chủ');
