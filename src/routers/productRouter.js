@@ -7,7 +7,7 @@ const uploadImage = require('../middlewares/uploadMiddleware.js');
 
 router.get('/', productController.getALLProducts);
 router.get('/:id', productController.getProductById);
-router.post('/', authMiddleware, adminMiddleware,uploadImage, productController.createProduct);
+router.post('/create/', authMiddleware, adminMiddleware,uploadImage, productController.createProduct);
 router.put('/:id', authMiddleware, adminMiddleware, productController.updateProduct);
 router.delete('/:id', authMiddleware, adminMiddleware, productController.deleteProduct);
 
